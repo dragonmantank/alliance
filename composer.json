@@ -1,0 +1,25 @@
+{
+    "name": "dragonmantank/alliance",
+    "description": "PHPUnit extension to add database functionality",
+    "type": "library",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Chris Tankersley",
+            "email": "chris@ctankersley.com",
+            "homepage": "https://ctankersley.com",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Alliance\\": "src/"
+        }
+    },
+    "require": {
+        "php": "~7.2",
+        "symfony/yaml": "^5.0",
+        "doctrine/dbal": "^2.10",
+        "phpunit/phpunit": "^8.0"
+    }
+}
