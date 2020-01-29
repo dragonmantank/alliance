@@ -14,13 +14,16 @@ class Phinx
     protected $environment = "testing";
     protected $configFile = 'phinx.yml';
     protected $configFilePath;
+    protected $phpUnitConfigPath;
+    protected $connectionSettings = [];
 
     public function __construct($options)
     {
         $this->environment = $options['environment'] ?? $this->environment;
         $this->configFile = $options['config_file'] ?? $this->configFile;
 
-        $this->configFilePath = dirname($options['phpunit_config_path']) . '/' . $this->configFile;
+        $this->phpUnitConfigPath = dirname($options['phpunit_config_path']);
+        $this->configFilePath = $this->phpUnitConfigPath . '/' . $this->configFile;
     }
 
     /**
@@ -52,13 +55,17 @@ class Phinx
      */
     public function destroyDatabase() : void
     {
-        exec(
-            sprintf(
-                'php vendor/bin/phinx rollback -e %s -c %s -t 0',
-                escapeshellarg($this->environment),
-                escapeshellarg($this->configFilePath)
-            )
-        );
+        if ($this->connectionSettings['driver'] == 'pdo_sqlite') {
+            @unlink($this->connectionSettings['path']);
+        } else {
+            exec(
+                sprintf(
+                    'php vendor/bin/phinx rollback -e %s -c %s -t 0',
+                    escapeshellarg($this->environment),
+                    escapeshellarg($this->configFilePath)
+                )
+            );
+        }
     }
 
     /**
@@ -79,10 +86,15 @@ class Phinx
                 $connectionSettings['user'] = $envConfig['user'];
                 $connectionSettings['password'] = $envConfig['pass'];
                 break;
+            case "sqlite":
+                $connectionSettings['driver'] = 'pdo_sqlite';
+                $connectionSettings['path'] = $this->phpUnitConfigPath . '/' . $envConfig['name'] . $envConfig['suffix'];
+                break;
             default:
                 throw new RuntimeException("Unknown database adapter for Phinx supplied");
         }
 
+        $this->connectionSettings = $connectionSettings;
         return DriverManager::getConnection($connectionSettings, new Configuration());
     }
 }

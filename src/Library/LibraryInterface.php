@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Alliance\Library;
 
-use Doctrine\DBAL\Driver\Connection;
+use Doctrine\DBAL\Connection;
 
 interface LibraryInterface
 {

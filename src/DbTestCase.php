@@ -5,6 +5,7 @@ namespace Alliance;
 
 use PHPUnit\Framework\TestCase;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Query\QueryBuilder;
 
 class DbTestCase extends TestCase
@@ -47,22 +48,30 @@ class DbTestCase extends TestCase
     /**
      * Assert that the specified query returns 0 rows
      */
-    public function assertNotInTable(string $table, array $query) : void
+    protected function assertNotInTable(string $table, array $query) : void
     {
         $qb = $this->buildSelectQuery($table, $query);
         $response = $qb->execute();
 
-        $this->assertSame(0, $response->rowCount());
+        if (SqlitePlatform::class == get_class(static::$conn->getDatabasePlatform())) {
+            $this->assertSame(0, count($response->fetchAll()));
+        } else {
+            $this->assertSame(0, $response->rowCount());
+        }
     }
 
     /**
      * Assert that the specified query only returns 1 row
      */
-    public function assertSingleRowInTable(string $table, array $query) : void
+    protected function assertSingleRowInTable(string $table, array $query) : void
     {
         $qb = $this->buildSelectQuery($table, $query);
         $response = $qb->execute();
 
-        $this->assertSame(1, $response->rowCount());
+        if (SqlitePlatform::class == get_class(static::$conn->getDatabasePlatform())) {
+            $this->assertSame(1, count($response->fetchAll()));
+        } else {
+            $this->assertSame(1, $response->rowCount());
+        }
     }
 }
